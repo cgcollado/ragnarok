@@ -6,50 +6,43 @@ public class PlayerController : MonoBehaviour {
 
     //Script creado a partir de un tutorial de Youtube del canal How Tuts
 
-    private Rigidbody player;
+    private CharacterController player;
     private float speed = 10f;
-    private float maxSpeed = 20f;
-    private bool isGround = true;
-    public GameObject reference;
-    private float jumpHeight = 7000f;
+    private float jumpSpeed = 8.0f;
+    private float gravity = 10f;
+    private float life = 1000f;
+    private Vector3 moveDirection = Vector3.zero;
 
-	// Use this for initialization
-	void Start () {
-        player = GetComponent<Rigidbody>();
-
+    // Use this for initialization
+    void Start () {
+        player = GetComponent<CharacterController>();
 
     }
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-        float moveHorizontal = Input.GetAxis("Horizontal");
-        float moveVertical = Input.GetAxis("Vertical");
-        float moveUp = Input.GetAxis("Jump");
-
-        if(player.velocity.magnitude > maxSpeed){
-            player.velocity = player.velocity.normalized * maxSpeed;
-        }
-
-        player.AddForce(moveVertical * reference.transform.forward * speed);
-        player.AddForce(moveHorizontal * reference.transform.right * speed);
-
-        if (Input.GetAxis("Jump")==1 && isGround)
+        
+        if (player.isGrounded)
         {
-            player.AddForce(moveUp * reference.transform.up * jumpHeight);
-            //player.AddForce(0, jumpHeight, 0);
-            isGround = false;
+            moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+            moveDirection = transform.TransformDirection(moveDirection);
+            moveDirection *= speed;
+            if (Input.GetButton("Jump"))
+                moveDirection.y = jumpSpeed;
+
         }
+        moveDirection.y -= gravity * Time.deltaTime;
+        player.Move(moveDirection * Time.deltaTime);
 
     }
-    void OnCollisionEnter (Collision collision)
+    void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("choque collider");
-        if (collision.collider.tag == "Ground")
+
+        if (collision.collider.tag == "EnemyWeapon")
         {
-            isGround = true;
-            Debug.Log("IsGround");
+            // Enemy Weapon Damege = 10
+            life -= 10f;
         }
-        else
-            isGround = false;
     }
+
 }
